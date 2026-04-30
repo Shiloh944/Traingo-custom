@@ -3,11 +3,11 @@ requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "srtgo"
+name = "traingo-custom"
 authors = [
-    {name = "DKim", email = "lapis42@gmail.com"},
+    {name = "Shiloh944"},
 ]
-description = "SRTgo: K-Train Reservation Helper"
+description = "Personal SRT/KTX reservation helper based on srtgo"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT License"}
@@ -29,7 +29,7 @@ dynamic = ["version"]
 [tool.setuptools_scm]
 
 [project.urls]
-Homepage = "https://github.com/lapis42/srtgo"
+Homepage = "https://github.com/Shiloh944/Traingo-custom"
 
 [project.scripts]
 srtgo = "srtgo.srtgo:srtgo"
