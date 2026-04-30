@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools", "setuptools-scm"]
+requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -11,6 +11,7 @@ description = "Personal SRT/KTX reservation helper based on srtgo"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT License"}
+version = "2.2.3+custom.1"
 classifiers = [
     "Programming Language :: Python :: 3",
 ]
@@ -25,8 +26,6 @@ dependencies = [
     "python-telegram-bot",
     "termcolor"
 ]
-dynamic = ["version"]
-[tool.setuptools_scm]
 
 [project.urls]
 Homepage = "https://github.com/Shiloh944/Traingo-custom"
