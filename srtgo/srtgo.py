@@ -1,7 +1,7 @@
 try:
-    from curl_cffi.requests.exceptions import ConnectionError
+    from curl_cffi.requests.exceptions import ConnectionError, RequestException
 except ImportError:
-    from requests.exceptions import ConnectionError
+    from requests.exceptions import ConnectionError, RequestException
 
 from datetime import datetime, timedelta
 from json.decoder import JSONDecodeError
@@ -131,18 +131,6 @@ ChoiceType = Union[int, None]
 @click.command()
 @click.option("--debug", is_flag=True, help="Debug mode")
 def srtgo(debug=False):
-    MENU_CHOICES = [
-        ("예매 시작", 1),
-        ("예매 확인/결제/취소", 2),
-        ("로그인 설정", 3),
-        ("텔레그램 설정", 4),
-        ("카드 설정", 5),
-        ("역 설정", 6),
-        ("역 직접 수정", 7),
-        ("예매 옵션 설정", 8),
-        ("나가기", -1),
-    ]
-
     RAIL_CHOICES = [
         (colored("SRT", "red"), "SRT"),
         (colored("KTX", "cyan"), "KTX"),
@@ -161,6 +149,18 @@ def srtgo(debug=False):
     }
 
     while True:
+        MENU_CHOICES = [
+            ("예매 시작", 1),
+            ("예매 확인/결제/취소", 2),
+            (f"로그인 설정 ({get_login_status()})", 3),
+            (f"텔레그램 설정 ({get_telegram_status()})", 4),
+            (f"카드 설정 ({get_card_status()})", 5),
+            ("역 설정", 6),
+            ("역 직접 수정", 7),
+            ("예매 옵션 설정", 8),
+            ("나가기", -1),
+        ]
+
         choice = inquirer.list_input(
             message="메뉴 선택 (↕:이동, Enter: 선택)", choices=MENU_CHOICES
         )
@@ -288,28 +288,49 @@ def get_options():
     return options.split(",") if options else []
 
 
+def get_login_status() -> str:
+    def has_login(rail_type):
+        return bool(
+            keyring.get_password(rail_type, "id")
+            and keyring.get_password(rail_type, "pass")
+        )
+
+    status = []
+    for rail_type in ("SRT", "KTX"):
+        status.append(f"{rail_type} {'저장됨' if has_login(rail_type) else '미설정'}")
+    return " / ".join(status)
+
+
+def get_telegram_status() -> str:
+    token = keyring.get_password("telegram", "token")
+    chat_id = keyring.get_password("telegram", "chat_id")
+    ok = keyring.get_password("telegram", "ok")
+    return "완료됨" if ok and token and chat_id else "미설정"
+
+
+def get_card_status() -> str:
+    return "저장됨" if keyring.get_password("card", "ok") else "미설정"
+
+
 def set_telegram() -> bool:
     token = keyring.get_password("telegram", "token") or ""
     chat_id = keyring.get_password("telegram", "chat_id") or ""
 
-    telegram_info = inquirer.prompt(
-        [
-            inquirer.Text(
-                "token",
-                message="텔레그램 token (Enter: 완료, Ctrl-C: 취소)",
-                default=token,
-            ),
-            inquirer.Text(
-                "chat_id",
-                message="텔레그램 chat_id (Enter: 완료, Ctrl-C: 취소)",
-                default=chat_id,
-            ),
-        ]
-    )
-    if not telegram_info:
+    try:
+        token_input = input(
+            f"텔레그램 token (Enter: 기존값 유지, Ctrl-C: 취소)"
+            f"{' [저장됨]' if token else ''}: "
+        ).strip()
+        chat_id_input = input(
+            f"텔레그램 chat_id (Enter: 기존값 유지, Ctrl-C: 취소)"
+            f"{' [저장됨]' if chat_id else ''}: "
+        ).strip()
+    except KeyboardInterrupt:
+        print("\n텔레그램 설정이 취소되었습니다.")
         return False
 
-    token, chat_id = telegram_info["token"], telegram_info["chat_id"]
+    token = token_input or token
+    chat_id = chat_id_input or chat_id
 
     try:
         keyring.set_password("telegram", "ok", "1")
@@ -642,7 +663,7 @@ def reserve(rail_type="SRT", debug=False):
     q_choice = [
         inquirer.Checkbox(
             "trains",
-            message="예약할 열차 선택 (↕:이동, Space: 선택, Enter: 완료, Ctrl-A: 전체선택, Ctrl-R: 선택해제, Ctrl-C: 취소)",
+            message="예약할 열차 선택 (Ctrl-A:전체, Ctrl-R:해제)",
             choices=[(train_decorator(train), i) for i, train in enumerate(trains)],
             default=None,
         ),
@@ -716,6 +737,10 @@ def reserve(rail_type="SRT", debug=False):
                     return
             _sleep()
 
+        except KeyboardInterrupt:
+            print("\n예매 대기를 중단했습니다.")
+            return
+
         except SRTError as ex:
             msg = ex.msg
             if "정상적인 경로로 접근 부탁드립니다" in msg or isinstance(
@@ -771,6 +796,14 @@ def reserve(rail_type="SRT", debug=False):
 
         except ConnectionError as ex:
             if not _handle_error(ex, "연결이 끊겼습니다"):
+                return
+            rail = login(rail_type, debug=debug)
+
+        except RequestException as ex:
+            if "Failure writing output to destination" in str(ex):
+                print("\n예매 대기를 중단했습니다.")
+                return
+            if not _handle_error(ex):
                 return
             rail = login(rail_type, debug=debug)
 
