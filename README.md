@@ -1,21 +1,50 @@
-# SRTgo: K-Train (KTX, SRT) Reservation Assistant
-[![Upload Python Package](https://github.com/lapis42/srtgo/actions/workflows/python-publish.yml/badge.svg)](https://github.com/lapis42/srtgo/actions/workflows/python-publish.yml)
-[![Downloads](https://static.pepy.tech/badge/srtgo)](https://pepy.tech/project/srtgo)
-[![Downloads](https://static.pepy.tech/badge/srtgo/month)](https://pepy.tech/project/srtgo)
-[![Python version](https://img.shields.io/pypi/pyversions/srtgo)](https://pypistats.org/packages/srtgo)
+# Traingo Custom
 
-> [!NOTE]
-> 공정한 예매 문화 조성을 위해 본 프로젝트의 개발 및 지원을 중단하기로 결정했습니다. 양해 부탁드립니다.
+개인 사용을 위해 수정한 SRT/KTX 예매 보조 도구입니다.
 
-> [!WARNING]
-> 본 프로그램의 모든 상업적, 영리적 이용을 엄격히 금지합니다. 본 프로그램 사용에 따른 민형사상 책임을 포함한 모든 책임은 사용자에게 있으며, 본 프로그램의 개발자는 민형사상 책임을 포함한 어떠한 책임도 부담하지 않습니다. 본 프로그램을 내려받음으로써 모든 사용자는 위 사항에 이의 없이 동의하는 것으로 간주됩니다.
+이 저장소는 [lapis42/srtgo](https://github.com/lapis42/srtgo)를 기반으로 한 개인 수정본입니다.
 
----
-> [!NOTE]
-> I have decided to discontinue the development and support for this project. Thank you for your understanding.
+## 변경 사항
 
-> [!WARNING]
-> All commercial and profit-making use of this program is strictly prohibited. Use of this program is at your own risk, and the developers of this program shall not be liable for any liability, including civil or criminal liability. By downloading this program, all users are deemed to agree to the above terms without any objection.
+- Windows 실행용 `run.bat` 추가
+- 텔레그램 설정 입력 방식을 일반 터미널 입력으로 변경
+- 메뉴에 로그인/텔레그램/카드 설정 상태 표시 추가
+- 예매 대기 중 `Ctrl-C` 취소 처리 개선
+- 열차 선택 화면의 긴 안내 문구로 인한 화면 깨짐 완화
 
-## Acknowledgments
-- This project includes code from [SRT](https://github.com/ryanking13/SRT) by ryanking13, licensed under the MIT License, and [korail2](https://github.com/carpedm20/korail2) by carpedm20, licensed under the BSD License.
+## 실행 방법
+
+### Windows
+
+Python을 설치한 뒤 `run.bat`을 실행합니다.
+
+Python 설치 시 `Add python.exe to PATH` 옵션을 체크해야 합니다.
+
+처음 실행하면 자동으로 가상환경을 만들고 필요한 패키지를 설치합니다.
+
+### WSL/Linux
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -e .
+.venv/bin/srtgo
+```
+
+## 설정
+
+- 로그인 정보, 텔레그램 설정, 카드 정보는 코드 저장소가 아니라 실행 환경의 keyring에 저장됩니다.
+- GitHub에는 계정 정보, 카드 정보, 텔레그램 토큰이 올라가지 않습니다.
+- 텔레그램 토큰은 비밀번호처럼 취급해야 하며 외부에 공유하지 마세요.
+
+## 원본 프로젝트
+
+- Original project: https://github.com/lapis42/srtgo
+- This project includes code from [SRT](https://github.com/ryanking13/SRT) by ryanking13 and [korail2](https://github.com/carpedm20/korail2) by carpedm20.
+
+## License
+
+원본 프로젝트의 MIT License를 따릅니다. 자세한 내용은 [LICENSE](LICENSE)를 참고하세요.
+
+## Notice
+
+본 프로그램의 사용에 따른 책임은 사용자에게 있습니다. 예매 서비스의 이용약관과 공정한 예매 문화를 준수하세요.
